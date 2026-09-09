@@ -1,32 +1,32 @@
-# BIP: Miner Template Control Signaling
+BIP: Miner Template Control Signaling
 
-**BIP:** ?  
-**Title:** Miner Template Control Signaling  
-**Author:** Christian  
-**Status:** Draft  
-**Type:** Informational  
-**Assigned:** ?  
-**License:** BSD-2-Clause
+BIP: ?
+Title: Miner Template Control Signaling
+Author: Christian
+Status: Draft
+Type: Informational
+Assigned: ?
+License: BSD-2-Clause
 
-## Abstract
+Abstract
 
-This document proposes a standardized signaling and commitment mechanism through which Bitcoin miners can publicly express their preference for **Miner Template Control (MTC)**.
+This document proposes a standardized signaling and commitment mechanism through which Bitcoin miners can publicly express their preference for Miner Template Control (MTC).
 
 MTC means that an individual miner retains the ability to construct and control the block template used for its own mining work, including transaction selection and transaction ordering, rather than being required to mine exclusively on a block template constructed by a mining pool.
 
 The proposal does not introduce a Bitcoin consensus rule and does not require Bitcoin nodes to recognize or enforce MTC.
 
-Instead, it establishes a voluntary coordination mechanism intended to improve communication between miners and mining pools and to create transparent economic incentives for pools to provide miner-controlled block templates.
+Instead, it defines a voluntary coordination mechanism intended to improve communication between miners and mining pools and to create transparent economic incentives for pools to provide miner-controlled block templates.
 
-A miner can use the mechanism to communicate its demand for MTC **before leaving its current pool**. A pool can therefore observe measurable demand for MTC and respond to that demand before hashpower necessarily migrates elsewhere.
+A miner can use the mechanism to communicate its demand for MTC before leaving its current pool. A pool can therefore observe measurable demand for MTC and respond to that demand before hashpower necessarily migrates elsewhere.
 
 If a pool does not provide the requested functionality, miners can subsequently direct their committed hashpower toward infrastructure that does.
 
 Stratum V2 with Job Declaration is one possible technical implementation of MTC, but this proposal is protocol-independent.
 
----
+The proposal deliberately separates the semantic meaning of MTC signaling from the technical mechanism used to transport or publish that signal. The purpose of this document is therefore to define the coordination problem, the meaning of the signal, and the desired properties of a signaling mechanism; the exact transport mechanism remains subject to further discussion.
 
-## Motivation
+Motivation
 
 Bitcoin mining involves several distinct forms of control.
 
@@ -34,16 +34,17 @@ Hashpower may be distributed among a large number of independently owned mining 
 
 A mining pool may aggregate hashpower from many independent miners while retaining centralized control over:
 
-- transaction selection;
-- transaction ordering;
-- block-template construction; and
-- consequently, the set of transactions its participating miners are attempting to include in blocks.
+transaction selection;
+
+transaction ordering;
+
+block-template construction; and
+
+consequently, the set of transactions its participating miners are attempting to include in blocks.
 
 The distribution of physical mining hardware and the distribution of block-template construction authority are therefore separate properties.
 
-Technical mechanisms for miner-controlled block construction already exist.
-
-For example, Stratum V2 Job Declaration allows miners to declare custom mining jobs containing transactions selected by the miner rather than having work unilaterally imposed by the pool. A Template Provider can provide custom block templates, and this role can be fulfilled by a Bitcoin Core full node or another node implementation.
+Technical mechanisms for miner-controlled block construction already exist. For example, Stratum V2 Job Declaration allows miners to declare custom mining jobs containing transactions selected by the miner rather than having work unilaterally imposed by the pool. A Template Provider can provide custom block templates, and this role can be fulfilled by a Bitcoin Core full node or another node implementation.
 
 However, technical availability does not necessarily produce economic adoption.
 
@@ -51,35 +52,67 @@ A miner may prefer MTC while having no standardized way to communicate that pref
 
 Without such a mechanism, the miner may effectively have only two choices:
 
-1. accept the pool's current architecture; or
-2. leave the pool.
+accept the pool's current architecture; or
+
+leave the pool.
 
 This proposal introduces a third option:
 
-**the miner can publicly communicate its preference before leaving.**
+the miner can publicly communicate its preference before leaving.
 
----
+This is important because the signal is not merely a threat to leave. It is a communication mechanism between miners and pools. It gives the pool information about miner demand while the miner is still participating, and therefore gives the pool an opportunity to respond before losing hashpower.
 
-## 1. Miner Template Control
+Non-Goals
 
-For the purposes of this proposal, mining infrastructure provides **Miner Template Control** if an individual miner is able to:
+This proposal does not attempt to:
 
-1. independently construct a candidate block template;
-2. select transactions for that template;
-3. determine the ordering of those transactions;
-4. submit mining work based on that template;
-5. receive valid mining shares and the applicable rewards through the infrastructure; and
-6. mine without being required by the infrastructure to replace its template with one constructed by the pool.
+decentralize Bitcoin mining by itself;
+
+require every miner or pool to support MTC;
+
+prevent miners from using pool-controlled templates;
+
+make MTC a Bitcoin consensus requirement;
+
+enforce economic commitments through Bitcoin consensus;
+
+mandate Stratum V2 or any other particular mining protocol;
+
+prescribe a specific mining pool architecture;
+
+guarantee that MTC signaling will result in pool adoption; or
+
+assign a Bitcoin block-version bit or otherwise modify consensus signaling.
+
+The proposal is intended as a voluntary coordination and market mechanism.
+
+1. Miner Template Control
+
+For the purposes of this proposal, mining infrastructure provides Miner Template Control if an individual miner is able to:
+
+independently construct a candidate block template;
+
+select transactions for that template;
+
+determine the ordering of those transactions;
+
+submit mining work based on that template; and
+
+mine on that template without being required by the infrastructure to replace it with a template constructed by the pool.
+
+MTC is therefore primarily a property of control over block construction.
+
+Accounting, share validation, payout handling, failover, and other pool services may be provided by the same or by separate infrastructure, but those functions are not themselves what defines MTC.
 
 The precise protocol used to provide these properties is outside the scope of this proposal.
 
 Stratum V2 Job Declaration is one possible implementation.
 
-MTC therefore describes a **functional property**, not a particular mining protocol.
+MTC therefore describes a functional property, not a particular mining protocol.
 
----
+MTC may also be viewed as a spectrum in practical deployments. This proposal defines the minimum functional property above without attempting to classify every possible intermediate architecture.
 
-## 2. Miner Signaling
+2. Miner Signaling
 
 A miner may publicly signal support for MTC.
 
@@ -89,29 +122,31 @@ The primary purpose of the signal is communication.
 
 A miner should be able to communicate:
 
-> I want my mining infrastructure to provide Miner Template Control.
+I want my mining infrastructure to provide Miner Template Control.
 
 without being required to immediately leave its existing pool.
 
 The signal SHOULD be:
 
-- publicly observable;
-- independently countable;
-- attributable to the signaling miner or to identifiable mining hashpower where technically possible;
-- distinguishable from Bitcoin consensus signaling; and
-- resistant to accidental or ambiguous interpretation.
+publicly observable;
+
+independently countable;
+
+attributable to the signaling miner or to identifiable mining hashpower where technically possible;
+
+distinguishable from Bitcoin consensus signaling; and
+
+resistant to accidental or ambiguous interpretation.
 
 The signaling mechanism MUST NOT change Bitcoin consensus rules.
 
 This proposal does not prescribe a specific signaling mechanism.
 
----
+3. Preference and Economic Commitment
 
-## 3. Preference and Commitment
+The proposal distinguishes between expressing a preference and making an economic commitment.
 
-The proposal distinguishes between **expressing a preference** and **making an economic commitment**.
-
-### Preference
+Preference
 
 A miner publicly signals its preference for MTC.
 
@@ -119,23 +154,25 @@ This signal does not require the miner to immediately change pools.
 
 Its purpose is to communicate demand.
 
-### Commitment
+Economic commitment
 
-A miner may additionally commit a specified amount of hashpower for a defined period to mining infrastructure that satisfies the MTC requirement.
+A miner may additionally declare an economic commitment to direct a specified amount of hashpower for a defined period toward mining infrastructure that satisfies the MTC requirement.
 
-The commitment gives the signal economic credibility.
+The purpose of the commitment is to give the signal greater economic credibility.
 
-A suggested commitment period is 2016 blocks, although this value is not normative and should be evaluated during review.
+A commitment is not a Bitcoin-consensus-enforced obligation. It is a voluntary economic commitment made by the miner. Its credibility depends on the ability of the signaling system and associated mining software or infrastructure to make the commitment publicly observable and, where practical, to make follow-through measurable.
 
-The distinction is important because communication should precede enforcement.
+A suggested commitment period is 2016 blocks, although this value is non-normative and should be evaluated during review.
+
+The distinction is important because communication should precede economic action.
 
 The intended sequence is:
 
-**preference → communication → opportunity for the pool to respond → commitment → migration if necessary.**
+preference → communication → opportunity for the pool to respond → economic commitment → migration if necessary
 
----
+The proposal does not require every preference signal to become a commitment.
 
-## 4. Communication Between Miners and Pools
+4. Communication Between Miners and Pools
 
 A central purpose of the proposal is to improve communication between miners and pools.
 
@@ -147,14 +184,19 @@ Under this proposal, miners can communicate their preference while continuing to
 
 For example:
 
-1. A miner currently contributes hashpower to Pool A.
-2. The miner signals support for MTC.
-3. Pool A can observe that a measurable amount of its participating hashpower has expressed this preference.
-4. Pool A can choose to implement MTC or provide compatible infrastructure.
-5. If Pool A responds successfully, the miner has no reason to migrate its hashpower merely to obtain MTC.
-6. If Pool A does not respond, the miner can direct its committed hashpower toward another pool or infrastructure that provides MTC.
+A miner currently contributes hashpower to Pool A.
 
-The signal therefore acts as an **early-warning mechanism** for pools.
+The miner signals support for MTC.
+
+Pool A can observe that a measurable amount of its participating hashpower has expressed this preference.
+
+Pool A can choose to implement MTC or provide compatible infrastructure.
+
+If Pool A responds successfully, the miner has no reason to migrate its hashpower merely to obtain MTC.
+
+If Pool A does not respond, the miner can direct its committed hashpower toward another pool or infrastructure that provides MTC.
+
+The signal therefore acts as an early-warning mechanism for pools.
 
 It gives the pool an opportunity to respond to miner demand before the pool actually loses the associated hashpower.
 
@@ -162,13 +204,11 @@ For miners, it provides a way to communicate a meaningful preference before taki
 
 This communication function is an independent benefit of the proposal, even before any hashpower migration takes place.
 
----
-
-## 5. Economic Mechanism
+5. Economic Mechanism
 
 The intended economic mechanism is:
 
-**signaling → public visibility → pool awareness → opportunity to respond → miner choice → hashpower migration if necessary → economic pressure → adoption.**
+signaling → public visibility → pool awareness → opportunity to respond → miner choice → hashpower migration if necessary → economic pressure → adoption
 
 The proposal does not assume that pools will adopt MTC merely because miners signal it.
 
@@ -182,36 +222,32 @@ The market therefore provides the principal enforcement mechanism.
 
 No Bitcoin consensus enforcement is required.
 
----
-
-## 6. Miner Choice and Voting With Hashpower
+6. Miner Choice and Economic Signaling
 
 The proposal relies on voluntary miner choice.
 
-A miner that makes an MTC commitment should be able to direct the committed hashpower only toward infrastructure satisfying the stated MTC requirement.
+A miner that makes an economic MTC commitment should, according to the terms of that commitment, direct the committed hashpower toward infrastructure satisfying the stated MTC requirement.
 
-If the current pool does not provide MTC, the miner may move to another pool.
+If the current pool does not provide MTC, the miner may move to another pool or other compatible infrastructure.
 
-This creates a form of economic signaling analogous to voting with one's purchasing power.
+The important point is not that hashpower constitutes a formal vote. Rather, hashpower is an economic resource that miners can allocate to infrastructure whose properties they prefer.
 
-The important distinction is that the signaling mechanism allows the preference to become visible **before** the actual migration takes place.
+The signaling mechanism allows that preference to become visible before the actual migration takes place.
 
 Consequently, the pool has an opportunity to respond before losing the miner.
 
----
-
-## 7. Public Measurement
+7. Public Measurement
 
 Independent observers SHOULD be able to distinguish at least three different states:
 
-1. **Signaling**  
-   Hashpower expressing a preference for MTC.
+Signaling
+Hashpower expressing a preference for MTC.
 
-2. **Claimed compatibility**  
-   Mining infrastructure publicly claiming to provide MTC.
+Claimed compatibility
+Mining infrastructure publicly claiming to provide MTC.
 
-3. **Demonstrable use**  
-   Hashpower for which there is independent evidence that MTC is actually being used.
+Demonstrable use
+Hashpower for which there is independent evidence that MTC is actually being used.
 
 These categories MUST NOT be conflated.
 
@@ -221,87 +257,99 @@ Likewise, signaling should not automatically be interpreted as proof that a mine
 
 Public statistics should make these distinctions explicit.
 
----
-
-## 8. Pool Transparency
+8. Pool Transparency
 
 Mining pools that support MTC SHOULD publicly document:
 
-- the protocol or mechanism used;
-- whether miners can construct their own block templates;
-- whether miners can independently select transactions;
-- whether miners can independently order transactions;
-- whether the pool can override a miner-created template;
-- how shares based on miner-created templates are handled; and
-- how failover operates.
+the protocol or mechanism used;
+
+whether miners can construct their own block templates;
+
+whether miners can independently select transactions;
+
+whether miners can independently order transactions;
+
+whether the pool can override a miner-created template;
+
+how shares based on miner-created templates are handled; and
+
+how failover operates.
 
 This allows miners to make informed choices and enables independent comparison of mining infrastructure.
 
----
-
-## 9. Signaling Mechanism
+9. Signaling Mechanism
 
 The exact mechanism for publicly signaling an MTC preference is intentionally left open.
 
 Possible approaches include, but are not limited to:
 
-- a mining-protocol-level signal;
-- a separate public commitment mechanism;
-- a mechanism associated with mining identities or payout infrastructure;
-- or a block-level signal, provided that it can be implemented without ambiguity or interference with Bitcoin consensus signaling.
+a mining-protocol-level signal;
 
-The proposal does **not** currently assign a bit in the Bitcoin block version field.
+a separate public commitment mechanism;
 
-In particular, BIP 9 defines version-bit signaling primarily in the context of soft-fork deployments, while current BIP 323 reserves bits 5 through 28 of `nVersion` for general-purpose mining nonce space and removes those bits from soft-fork signaling. Any use of `nVersion` for MTC signaling would therefore require careful coordination with existing and future Bitcoin protocol conventions and should not be assumed by this proposal.
+a mechanism associated with mining identities or payout infrastructure; or
+
+a block-level signal, provided that it can be implemented without ambiguity or interference with Bitcoin consensus signaling.
+
+The proposal does not currently assign a bit in the Bitcoin block version field.
+
+In particular, BIP 9 defines version-bit signaling primarily in the context of soft-fork deployments, while current BIP 323 reserves bits 5 through 28 of nVersion for general-purpose mining nonce space and removes those bits from soft-fork signaling. Any use of nVersion for MTC signaling would therefore require careful coordination with existing and future Bitcoin protocol conventions and should not be assumed by this proposal.
 
 The final signaling mechanism should satisfy the following properties:
 
-1. it must not modify Bitcoin consensus rules;
-2. it should be publicly observable;
-3. it should be independently measurable;
-4. it should minimize ambiguity regarding what is being signaled;
-5. it should allow a meaningful association between the signal and the committed hashpower where practical; and
-6. it should not interfere with existing or future Bitcoin protocol signaling mechanisms.
+it must not modify Bitcoin consensus rules;
+
+it should be publicly observable;
+
+it should be independently measurable;
+
+it should minimize ambiguity regarding what is being signaled;
+
+it should allow a meaningful association between the signal and the committed hashpower where practical; and
+
+it should not interfere with existing or future Bitcoin protocol signaling mechanisms.
 
 Determining the best mechanism is an explicit subject for further discussion.
 
----
+10. Commitment Representation
 
-## 10. Commitment Representation
+An economic commitment should, where technically practical, identify:
 
-A commitment should, where technically practical, identify:
+the amount or approximate amount of hashpower covered by the commitment;
 
-- the amount of hashpower covered by the commitment;
-- the beginning of the commitment period;
-- the duration or end height;
-- and the MTC requirement to which the commitment applies.
+the beginning of the commitment period;
+
+the duration or end height; and
+
+the MTC requirement to which the commitment applies.
 
 The commitment should be publicly verifiable to the greatest extent practical.
 
-The exact method for binding a commitment to specific mining hashpower remains an open technical question.
+The exact method for associating a commitment with specific mining hashpower remains an open technical question.
 
 The proposal does not require miners to reveal their real-world identities.
 
----
+Because hashpower is a dynamic resource, the protocol should not assume that a declared hashpower amount can always be measured with exact precision. Reporting may therefore need to use ranges, estimates, or other verifiable measures.
 
-## 11. No Consensus Enforcement
+11. No Consensus Enforcement
 
 This proposal intentionally does not make MTC a Bitcoin consensus requirement.
 
 Bitcoin nodes MUST NOT reject a block merely because:
 
-- the miner did not signal MTC;
-- the miner used a pool-controlled template;
-- the pool does not support MTC; or
-- the block does not contain an MTC signal.
+the miner did not signal MTC;
+
+the miner used a pool-controlled template;
+
+the pool does not support MTC; or
+
+the block does not contain an MTC signal.
 
 MTC is an economic and organizational property of mining infrastructure, not a consensus property of Bitcoin.
 
 The proposal therefore introduces no consensus rule.
 
----
-
-## 12. Relationship to Stratum V2
+12. Relationship to Stratum V2
 
 Stratum V2 Job Declaration provides a concrete technical mechanism for miners to create and declare custom mining jobs. Its specification explicitly describes custom jobs as jobs containing transactions selected by the miner rather than unilaterally imposed by the pool.
 
@@ -315,160 +363,181 @@ This distinction is intentional.
 
 The proposal seeks to create economic demand for miner-controlled templates rather than to mandate a particular mining protocol.
 
----
+13. Incentive Structure
 
-## 13. Incentive Structure
-
-### For miners
+For miners
 
 The proposal provides:
 
-- a mechanism to publicly express a preference for MTC;
-- a means of communicating that preference without immediately changing pools;
-- greater transparency concerning pool capabilities;
-- the ability to coordinate with other miners;
-- and an economically credible mechanism for changing infrastructure if the preference is not met.
+a mechanism to publicly express a preference for MTC;
 
-### For pools
+a means of communicating that preference without immediately changing pools;
+
+greater transparency concerning pool capabilities;
+
+the ability to coordinate with other miners; and
+
+an economically credible mechanism for changing infrastructure if the preference is not met.
+
+For pools
 
 The proposal provides:
 
-- early visibility into miner demand;
-- an opportunity to retain miners by implementing requested functionality;
-- an additional competitive feature with which to differentiate from other pools;
-- and better information about why miners may otherwise leave.
+early visibility into miner demand;
 
-### For the Bitcoin ecosystem
+an opportunity to retain miners by implementing requested functionality;
+
+an additional competitive feature with which to differentiate from other pools; and
+
+better information about why miners may otherwise leave.
+
+For the Bitcoin ecosystem
 
 The proposal may provide:
 
-- increased transparency concerning control over block construction;
-- stronger economic incentives for decentralized template construction;
-- greater separation between hashpower aggregation and block-template control; and
-- potentially reduced concentration of transaction-selection authority.
+increased transparency concerning control over block construction;
 
----
+stronger economic incentives for decentralized template construction;
 
-## 14. Informational Thresholds
+greater separation between hashpower aggregation and block-template control; and
 
-Public reporting MAY use thresholds such as:
+potentially reduced concentration of transaction-selection authority.
 
-- 1%;
-- 5%;
-- 10%;
-- 20%;
-- 30%; and
-- 50%
+14. Public Reporting
 
-of network hashpower signaling MTC.
+Public reporting MAY use configurable thresholds or other aggregation methods to make changes in miner preference easier to observe.
+
+For example, reporting systems may publish changes when the amount of signaling hashpower crosses a meaningful percentage of network hashpower or of the hashpower associated with a particular pool.
 
 These thresholds are informational only.
 
 They do not activate consensus rules, invalidate blocks, or impose obligations on miners or pools.
 
-Their purpose is to make changes in miner preference easier to observe and communicate.
+The specific thresholds and reporting methodology should be determined by the operators of independent statistical infrastructure and should not be confused with protocol activation thresholds.
 
----
-
-## 15. Deployment
+15. Deployment
 
 The proposal can be developed in several stages.
 
-### Stage 1 — Discussion
+Stage 1 — Discussion
 
 Discuss the economic model and technical feasibility with miners, pool operators, protocol developers, and researchers.
 
-### Stage 2 — Signaling Standard
+Stage 2 — Signaling Semantics
 
-Define a standardized, publicly interpretable signaling mechanism.
+Define a standardized and publicly interpretable meaning for MTC preference and economic commitment.
 
-### Stage 3 — Software Support
+Stage 3 — Signaling Mechanism
+
+Define and implement a technical mechanism capable of transporting or publishing the standardized signal.
+
+Stage 4 — Software Support
 
 Implement signaling, commitment, reporting, and optional enforcement mechanisms in mining software.
 
-### Stage 4 — Statistical Infrastructure
+Stage 5 — Statistical Infrastructure
 
 Develop independent statistics capable of distinguishing signaling, claimed compatibility, and demonstrable MTC usage.
 
-### Stage 5 — Miner Adoption
+Stage 6 — Miner Adoption
 
-Miners voluntarily begin signaling their preference and, where desired, making commitments.
+Miners voluntarily begin signaling their preference and, where desired, making economic commitments.
 
-### Stage 6 — Market Coordination
+Stage 7 — Market Coordination
 
 Pools respond to observable demand and compete for MTC-supporting hashpower.
 
----
-
-## 16. Security and Abuse Considerations
+16. Security and Abuse Considerations
 
 A signaling system may be subject to:
 
-- false signaling;
-- hashpower attribution errors;
-- miners signaling without intending to follow through;
-- pools falsely claiming MTC compatibility;
-- temporary or strategic signaling;
-- and attempts to manipulate public statistics.
+false signaling;
+
+hashpower attribution errors;
+
+miners signaling without intending to follow through;
+
+pools falsely claiming MTC compatibility;
+
+temporary or strategic signaling;
+
+attempts to manipulate public statistics; and
+
+changes in mining hardware or pool allocation during a commitment period.
 
 These issues do not necessarily require consensus enforcement.
 
-The principal defense is transparency and independent measurement.
+The principal defenses are transparency, clear signaling semantics, and independent measurement.
 
 Public statistics SHOULD distinguish between claims and demonstrable behavior.
 
-Where practical, mining software SHOULD make it difficult for a miner to accidentally signal a commitment that its configured infrastructure cannot honor.
+Where practical, mining software SHOULD make it difficult for a miner to accidentally signal an economic commitment that its configured infrastructure cannot honor.
 
----
+A commitment mechanism should also make clear whether the reported hashpower is an estimate, a declared capacity, or independently observed contributed hashpower.
 
-## 17. Open Questions
+17. Open Questions
 
 The following questions require further technical and economic discussion:
 
-1. What is the most appropriate signaling mechanism?
-2. Should signaling occur at the mining-protocol level, through a separate public commitment, or through another mechanism?
-3. Is there a useful block-level signaling mechanism that does not conflict with existing Bitcoin conventions?
-4. How can signaling avoid interference with consensus version bits and other uses of the block header?
-5. Should signaling occur per block, per mining job, per share, or through a separate public commitment?
-6. How can hashpower be attributed to individual miners without requiring disclosure of their identities?
-7. How should a pool's MTC capability be independently verified?
-8. What precisely constitutes sufficient miner control over a template?
-9. How should failover behave when an MTC-compatible pool becomes unavailable?
-10. What commitment duration provides useful economic credibility without unnecessarily restricting miners?
-11. Should mining software provide automatic enforcement of a miner's MTC commitment?
-12. What reference implementation and test suite would be useful?
-13. Can existing Stratum V2 Job Declaration implementations serve as an initial interoperability reference?
-14. Can the signaling mechanism provide sufficient public information to distinguish genuine miner preference from purely symbolic signaling?
+What is the most appropriate signaling mechanism?
 
----
+Should signaling occur at the mining-protocol level, through a separate public commitment, or through another mechanism?
 
-## 18. Rationale
+Is there a useful block-level signaling mechanism that does not conflict with existing Bitcoin conventions?
+
+How can signaling avoid interference with consensus version bits and other uses of the block header?
+
+Should signaling occur per block, per mining job, per share, or through a separate public commitment?
+
+How can hashpower be associated with individual miners without requiring disclosure of their identities?
+
+How should a pool's MTC capability be independently verified?
+
+What precisely constitutes sufficient miner control over a template?
+
+How should failover behave when an MTC-compatible pool becomes unavailable?
+
+What commitment duration provides useful economic credibility without unnecessarily restricting miners?
+
+Should mining software provide automatic enforcement of a miner's economic commitment?
+
+What reference implementation and test suite would be useful?
+
+Can existing Stratum V2 Job Declaration implementations serve as an initial interoperability reference?
+
+Can the signaling mechanism provide sufficient public information to distinguish genuine miner preference from purely symbolic signaling?
+
+What is the appropriate way to represent approximate or changing hashpower during a commitment period?
+
+Should economic commitments be transferable when mining infrastructure changes ownership or operator?
+
+18. Rationale
 
 The proposal deliberately avoids attempting to solve mining centralization through Bitcoin consensus.
 
 Instead, it targets an economic and communication problem.
 
-Miners already possess the ultimate economic ability to choose where their hashpower is directed.
+Miners already possess the economic ability to choose where their hashpower is directed.
 
 Pools already compete for that hashpower.
 
-The missing mechanism is a standardized way for miners to communicate a specific architectural preference **before exercising that choice**.
+The missing mechanism is a standardized way for miners to communicate a specific architectural preference before exercising that choice.
 
 MTC signaling attempts to provide that mechanism.
 
 The intended result is not:
 
-**miners threaten pools → pools are forced to comply**
+miners threaten pools → pools are forced to comply
 
 but rather:
 
-**miners express demand → pools receive information → pools can respond → miners choose → market incentives determine the outcome.**
+miners express demand → pools receive information → pools can respond → miners choose → market incentives determine the outcome.
 
 This makes the proposal fundamentally voluntary and market-driven.
 
----
+The proposal also recognizes that technical support and economic demand are separate questions. A protocol can make MTC possible without creating sufficient incentive for miners and pools to adopt it. The signaling mechanism is intended to connect the technical possibility with observable market demand.
 
-## 19. Conclusion
+19. Conclusion
 
 Miner Template Control can reduce the concentration of block-template construction without requiring changes to Bitcoin consensus.
 
@@ -480,6 +549,36 @@ By allowing miners to communicate their preference before leaving a pool, the me
 
 The resulting process is:
 
-**communication → coordination → transparency → competition → voluntary hashpower migration → economic adoption.**
+communication → coordination → transparency → competition → voluntary hashpower migration → economic adoption
 
 This proposal therefore seeks to improve not only mining decentralization, but also the quality and timing of communication between miners and the pools competing for their hashpower.
+
+Appendix A — Terminology
+
+Miner Template Control (MTC)
+The functional ability of a miner to construct and control the block template used for its own mining work, including transaction selection and ordering, without being required to replace that template with one constructed by the pool.
+
+Preference signal
+A public expression that a miner considers MTC a desired property of its mining infrastructure.
+
+Economic commitment
+A voluntary declaration that specified hashpower will, for a defined period, be directed toward infrastructure satisfying a stated MTC requirement.
+
+Claimed compatibility
+A public statement by mining infrastructure that it provides MTC.
+
+Demonstrable use
+Independently observable evidence that mining hashpower is actually using MTC.
+
+Template Provider
+Infrastructure responsible for constructing a block template for miner-controlled mining work. A Template Provider may be operated by the miner or by another party.
+
+Appendix B — Design Principle
+
+The central design principle of this proposal is:
+
+A miner should be able to communicate a preference before being forced to express that preference through economic exit.
+
+The proposal therefore treats communication itself as valuable.
+
+The purpose of the signal is not merely to announce that a miner has already left a pool. Its purpose is to give the pool information while the relationship still exists, allowing the pool to respond and allowing the miner to make an informed economic choice.
